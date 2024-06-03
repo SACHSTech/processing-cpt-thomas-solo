@@ -5,7 +5,6 @@ import processing.core.PImage;
 
 public class Sketch extends PApplet {
 	
-  PImage imgPlayer;
   PImage imgGrass;
   PImage imgDirt;
 
@@ -17,10 +16,11 @@ public class Sketch extends PApplet {
   boolean boolDown = false;
   boolean boolLeft = false;
   boolean boolRight = false;
+  boolean boolShift = false;
+  float timeSince = 0;
+  int intFrame = 0;
 
-  float fltGravity = 0;
-  float fltPX = 100;
-  float fltPY = 300;
+  Player player = new Player();
   
   public void settings() {
     size(960, 540);
@@ -33,8 +33,10 @@ public class Sketch extends PApplet {
 
   public void loadImages() {
 
-    imgPlayer = loadImage("Player/Idle1.png");
-    imgPlayer.resize(imgPlayer.width*2, imgPlayer.height*2);
+    player.imgPlayer = loadImage("Player/Idle1.png");
+    player.imgPlayer.resize(player.imgPlayer.width*2, player.imgPlayer.height*2);
+    intFrame = 0;
+    timeSince = millis();
 
     imgGrass = loadImage("Objects/Grass.png");
     imgGrass.resize(imgGrass.width*2, imgGrass.height*2);
@@ -48,35 +50,18 @@ public class Sketch extends PApplet {
 	  
     background(102, 204, 255);
 
-    player();
+    collision();
+    player.run(boolUp, boolDown, boolLeft, boolRight, boolShift);
+    image(player.imgPlayer, player.fltPX, player.fltPY);
   
     level();
 
+    animate();
+
   }
 
-  public void player() {
-
-    if(boolRight == true){
-      fltPX += 5;
-    }
-    if(boolLeft == true){
-      fltPX -= 5;
-    }
-    if(boolUp == true && isOnTop() == true){
-      fltPY -= 5;
-      fltGravity = 11;
-    }
-
-    fltPY -= fltGravity;
-
-    if(isOnTop() == true){
-      fltGravity = 0;
-    } else {
-      fltGravity -= 0.5;
-    }
-
-    image(imgPlayer, fltPX, fltPY);
-
+  public void collision() {
+    isOnTop();
   }
 
   public void level() {
@@ -105,21 +90,95 @@ public class Sketch extends PApplet {
   public boolean isOnTop() {
 
     for(int i = 0; i < intPlatformX.size(); i++){
-      if (fltPY + imgPlayer.height >= intPlatformY.get(i) + 28 && fltPY + imgPlayer.height <= intPlatformY.get(i) + 28 + imgGrass.height && fltPX + imgPlayer.width - 5 >= intPlatformX.get(i) && fltPX + 5 <= intPlatformX.get(i) + imgGrass.width) {
-        if (fltPY + imgPlayer.height > intPlatformY.get(i) + 28){
-            fltPY -= 1;
+      if (player.fltPY + player.imgPlayer.height >= intPlatformY.get(i) + 28 && player.fltPY + player.imgPlayer.height <= intPlatformY.get(i) + 28 + imgGrass.height && player.fltPX + player.imgPlayer.width - 5 >= intPlatformX.get(i) && player.fltPX + 5 <= intPlatformX.get(i) + 5) {
+        while (player.fltPY + player.imgPlayer.height > intPlatformY.get(i) + 28){
+            player.fltPY -= 1;
         }
-          return true;
+          player.strState = "ground";
+          return true;  
         }
 
     }
 
+    player.strState = "air";
     return false;
 
   }
 
   public void animate() {
-   
+
+    if(boolLeft == true || boolRight == true && player.strState == "ground"){
+      
+      if(intFrame == 0){
+        intFrame = 7;
+        timeSince = millis();
+      } 
+
+      if(intFrame >= 7 && intFrame <= 14 && millis() >= timeSince + 100){
+        intFrame++;
+        timeSince = millis();
+      }
+
+      if(intFrame == 14){
+        intFrame = 7;
+      }
+
+    } else if (player.strState == "ground"){
+
+      if(intFrame != 1 && millis() >= timeSince + 500){
+        intFrame = 1;
+        timeSince = millis();
+      } else if (intFrame == 1 && millis() >= timeSince + 500){
+        intFrame = 0;
+        timeSince = millis();
+      }
+      
+
+    } else if (player.strState == "air"){
+
+      if(intFrame != 2 || intFrame != 3 || intFrame != 4 || intFrame != 5){
+        intFrame = 2;
+        timeSince = millis();
+      }
+      
+      if (millis() >= timeSince + 500){
+        intFrame = 3;
+        timeSince = millis();
+      }
+
+    }
+
+    if(intFrame == 0){
+      player.imgPlayer = loadImage("Player/Idle1.png");
+    } else if (intFrame == 1){
+      player.imgPlayer = loadImage("Player/Idle2.png");
+    } else if (intFrame == 2){
+      player.imgPlayer = loadImage("Player/Jump1.png");
+    } else if (intFrame == 3){
+      player.imgPlayer = loadImage("Player/Jump2.png");
+    } else if (intFrame == 4){
+      player.imgPlayer = loadImage("Player/Jump3.png");
+    } else if (intFrame == 5){
+      player.imgPlayer = loadImage("Player/JumpLand.png");
+    } else if (intFrame == 7){
+      player.imgPlayer = loadImage("Player/Run1.png");
+    } else if (intFrame == 8){
+      player.imgPlayer = loadImage("Player/Run2.png");
+    } else if (intFrame == 9){
+      player.imgPlayer = loadImage("Player/Run3.png");
+    } else if (intFrame == 10){
+      player.imgPlayer = loadImage("Player/Run4.png");
+    } else if (intFrame == 11){
+      player.imgPlayer = loadImage("Player/Run5.png");
+    } else if (intFrame == 12){
+      player.imgPlayer = loadImage("Player/Run6.png");
+    } else if (intFrame == 13){
+      player.imgPlayer = loadImage("Player/Run7.png");
+    } else if (intFrame == 14){
+      player.imgPlayer = loadImage("Player/Run8.png");
+    }
+
+    player.imgPlayer.resize(player.imgPlayer.width*2, player.imgPlayer.height*2);
   }
   
   public void keyPressed() {
@@ -136,6 +195,10 @@ public class Sketch extends PApplet {
     if (key == 'd'){
       boolRight = true;
     }
+
+    if (keyCode == 16){
+      boolShift = true;
+    }
   }
 
   public void keyReleased() {
@@ -151,6 +214,10 @@ public class Sketch extends PApplet {
     }
     if (key == 'd'){
       boolRight = false;
+    }
+
+    if (keyCode == 16){
+      boolShift = false;
     }
   }
 
