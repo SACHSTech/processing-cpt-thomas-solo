@@ -7,6 +7,8 @@ public class Sketch extends PApplet {
 	
   PImage imgGrass;
   PImage imgDirt;
+  PImage imgPlat;
+  PImage imgSpike;
 
   ArrayList<Integer> intPlatformY = new ArrayList<Integer>();
   ArrayList<Integer> intPlatformX = new ArrayList<Integer>();
@@ -21,6 +23,7 @@ public class Sketch extends PApplet {
   int intFrame = 0;
 
   Player player = new Player();
+  String strAnim = "idle";
   
   public void settings() {
     size(960, 540);
@@ -44,6 +47,12 @@ public class Sketch extends PApplet {
     imgDirt = loadImage("Objects/Dirt.png");
     imgDirt.resize(imgDirt.width*2, imgDirt.height*2);
 
+    imgPlat = loadImage("Objects/Platform.png");
+    imgPlat.resize(imgPlat.width*2, imgPlat.height*2);
+
+    imgSpike = loadImage("Objects/Spikes.png");
+    imgSpike.resize(imgSpike.width*2, imgSpike.height*2);
+
   }
 
   public void draw() {
@@ -62,22 +71,64 @@ public class Sketch extends PApplet {
 
   public void collision() {
     isOnTop();
+    
+    /*
+    for(int i = 0; i < intPlatformX.size(); i++){
+      if(player.fltPX + player.imgPlayer.width >= intPlatformX.get(i) && player.fltPX <= intPlatformX.get(i) + imgPlat.width && player.fltPY + player.imgPlayer.height > intPlatformY.get(i) && player.fltPY <= intPlatformY.get(i) + imgPlat.height){
+        
+        if (boolRight == true){
+          player.fltPX -= 5;
+        } else if(boolLeft == true){
+          player.fltPX += 5;
+        }
+  
+      }
+    }
+    */
   }
 
   public void level() {
-    for(int x = 0; x < width / 2; x += imgGrass.width - 2){
+    // first chunk
+    for(int x = 0; x < imgGrass.width * 4; x += imgGrass.width - 2){
       
       createPlatform(x, height - imgGrass.height * 3, imgGrass);
 
     }
-
     for(int y = height - imgDirt.height * 2 - 2; y < height; y += imgDirt.height - 2){
-      for(int x = 0; x < width / 2; x += imgDirt.width - 2){
+      for(int x = 0; x < imgGrass.width * 4; x += imgDirt.width - 2){
         
         createPlatform(x, y, imgDirt);
 
       }
     }
+
+    // second chunk
+    for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgGrass.width - 2){
+      
+      createPlatform(x, height - imgGrass.height * 4, imgGrass);
+
+    }
+    for(int y = height - imgDirt.height * 3 - 2; y < height; y += imgDirt.height - 2){
+      for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgDirt.width - 2){
+        
+        createPlatform(x, y, imgDirt);
+
+      }
+    }
+
+    // platform chunk 1
+    for(int x = imgPlat.width * 13; x < width; x += imgPlat.width){
+      createPlatform(x, height - imgPlat.height * 8, imgPlat);
+    }
+
+    // platform chunk 2
+    for(int x = 0; x < imgPlat.width * 11; x += imgPlat.width){
+      createPlatform(x, height - imgPlat.height * 12, imgPlat);
+    }
+
+    // spike
+    createPlatform(imgSpike.width * 6, height - imgSpike.height * 13, imgSpike);
+
     
   }
 
@@ -90,12 +141,14 @@ public class Sketch extends PApplet {
   public boolean isOnTop() {
 
     for(int i = 0; i < intPlatformX.size(); i++){
-      if (player.fltPY + player.imgPlayer.height >= intPlatformY.get(i) + 28 && player.fltPY + player.imgPlayer.height <= intPlatformY.get(i) + 28 + imgGrass.height && player.fltPX + player.imgPlayer.width - 5 >= intPlatformX.get(i) && player.fltPX + 5 <= intPlatformX.get(i) + 5) {
+      if (player.fltPY + player.imgPlayer.height >= intPlatformY.get(i) + 28 && player.fltPY + player.imgPlayer.height <= intPlatformY.get(i) + 28 + imgGrass.height && player.fltPX + player.imgPlayer.width - 30 >= intPlatformX.get(i) && player.fltPX - 10 <= intPlatformX.get(i) + 5) {
         while (player.fltPY + player.imgPlayer.height > intPlatformY.get(i) + 28){
             player.fltPY -= 1;
         }
+
           player.strState = "ground";
           return true;  
+      
         }
 
     }
@@ -107,9 +160,11 @@ public class Sketch extends PApplet {
 
   public void animate() {
 
-    if(boolLeft == true || boolRight == true && player.strState == "ground"){
+    checkAnim();
+
+    if(strAnim == "run"){
       
-      if(intFrame == 0){
+      if(intFrame < 7 || intFrame > 14){
         intFrame = 7;
         timeSince = millis();
       } 
@@ -123,26 +178,20 @@ public class Sketch extends PApplet {
         intFrame = 7;
       }
 
-    } else if (player.strState == "ground"){
+    } else if (strAnim == "idle"){
 
-      if(intFrame != 1 && millis() >= timeSince + 500){
-        intFrame = 1;
-        timeSince = millis();
-      } else if (intFrame == 1 && millis() >= timeSince + 500){
-        intFrame = 0;
-        timeSince = millis();
-      }
+      intFrame = 0;
       
 
-    } else if (player.strState == "air"){
+    } else if (strAnim == "jump"){
 
-      if(intFrame != 2 || intFrame != 3 || intFrame != 4 || intFrame != 5){
+      if(intFrame < 2 || intFrame > 5){
         intFrame = 2;
         timeSince = millis();
       }
       
-      if (millis() >= timeSince + 500){
-        intFrame = 3;
+      if (millis() >= timeSince + 250 && intFrame < 4){
+        intFrame++;
         timeSince = millis();
       }
 
@@ -179,6 +228,21 @@ public class Sketch extends PApplet {
     }
 
     player.imgPlayer.resize(player.imgPlayer.width*2, player.imgPlayer.height*2);
+  }
+
+  public void checkAnim() {
+    if(player.strState == "air" && strAnim != "jump"){
+      strAnim = "jump";
+      timeSince = 0;
+    } else if(player.strState == "ground") {
+      if(boolRight == true || boolLeft == true && strAnim != "run"){
+        strAnim = "run";
+        //timeSince = 0;
+      } else if(boolRight == false && boolLeft == false && strAnim != "idle"){
+        strAnim = "idle";
+        timeSince = 0;
+      }
+    }
   }
   
   public void keyPressed() {
