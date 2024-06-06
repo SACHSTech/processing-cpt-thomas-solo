@@ -1,3 +1,5 @@
+// this is all incomprehensible to me
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

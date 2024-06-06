@@ -9,6 +9,8 @@ public class Player {
     float fltGravity = 0;
     float fltPX = 100;
     float fltPY = 300;
+    int intDirection = 1;
+    double fltPSpeed = 2.5;
     
     String strState = "air";
     boolean canDash = true;
@@ -16,18 +18,17 @@ public class Player {
 
     public void run(boolean boolUp, boolean boolDown, boolean boolLeft, boolean boolRight, boolean boolShift) {
 
-        /*
-        if(boolShift == true){
-            dash();
+        if(boolRight == true || boolLeft == true){
+          fltPX += fltPSpeed*intDirection;
+          if(fltPSpeed < 5){
+            fltPSpeed += 0.25;
+          }
         }
-        */
+        
+        if(boolLeft == false && boolRight == false){
+          fltPSpeed = 2;
+        }
 
-        if(boolRight == true){
-          fltPX += 5;
-        }
-        if(boolLeft == true){
-          fltPX -= 5;
-        }
         if(boolUp == true && strState == "ground"){
           fltPY -= 5;
           fltGravity = 11;
