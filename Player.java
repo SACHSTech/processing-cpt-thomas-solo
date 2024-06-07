@@ -7,7 +7,7 @@ public class Player {
     PImage imgPlayer;
 
     float fltGravity = 0;
-    float fltPX = 100;
+    float fltPX = 480 - 60;
     float fltPY = 300;
     int intDirection = 1;
     double fltPSpeed = 2.5;
@@ -16,10 +16,18 @@ public class Player {
     boolean canDash = true;
     float startTime;
 
+    boolean boolDead = false;
+
     public void run(boolean boolUp, boolean boolDown, boolean boolLeft, boolean boolRight, boolean boolShift) {
 
         if(boolRight == true || boolLeft == true){
-          fltPX += fltPSpeed*intDirection;
+          if(boolRight == true && fltPX < 550 - 60){
+            fltPX += fltPSpeed*intDirection;
+          } else if (boolLeft == true && fltPX > 410  - 60){
+            fltPX += fltPSpeed*intDirection;
+          }
+
+        
           if(fltPSpeed < 5){
             fltPSpeed += 0.25;
           }

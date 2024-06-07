@@ -11,8 +11,9 @@ public class Sketch extends PApplet {
   PImage imgSpike;
 
   ArrayList<Integer> intPlatformY = new ArrayList<Integer>();
-  ArrayList<Integer> intPlatformX = new ArrayList<Integer>();
-
+  ArrayList<Float> intPlatformX = new ArrayList<Float>();
+  int intObjectLimit = 0;
+  int intMoveStage = 0;
 
   boolean boolUp = false;
   boolean boolDown = false;
@@ -27,6 +28,9 @@ public class Sketch extends PApplet {
 
   Player player = new Player();
   String strAnim = "idle";
+
+  float fltXOffset = 0;
+  float fltYOffset = 0;
   
   public void settings() {
     size(960, 540);
@@ -109,17 +113,38 @@ public class Sketch extends PApplet {
 	  
     background(102, 204, 255);
 
-    collision();
-    player.run(boolUp, boolDown, boolLeft, boolRight, boolShift);
+    if(!player.boolDead){
+      collision();
+      player.run(boolUp, boolDown, boolLeft, boolRight, boolShift);
+      animate();
+    } else {
+      if(timeSince + 500 <= millis()){
+        player.boolDead = false;
+        player.fltGravity = 0;
+        player.fltPX = 480 - 60;
+        player.fltPY = 300;
+
+        for(int i = 0; i < intPlatformX.size(); i++){
+          intPlatformX.remove(i);
+          intPlatformY.remove(i);
+        }
+
+        fltXOffset = 0;
+      }
+    }
+  
     image(player.imgPlayer, player.fltPX, player.fltPY);
   
     level();
 
-    animate();
-
   }
 
   public void collision() {
+    if(player.fltPY > height){
+      player.boolDead = true;
+      timeSince = millis();
+    }
+
     isOnTop();
     
     for(int i = 0; i < intPlatformX.size(); i++){
@@ -136,16 +161,27 @@ public class Sketch extends PApplet {
   }
 
   public void level() {
+    
+    intObjectLimit = 58;
+    intMoveStage = -330;
+
+    // 0th chunk
+    for(int x = imgGrass.width * 4 * -1 + 8; x < -10; x += imgGrass.width - 2){
+      
+      createPlatform(x - intMoveStage, height - imgGrass.height * 12, imgGrass);
+
+    }
+
     // first chunk
     for(int x = 0; x < imgGrass.width * 4; x += imgGrass.width - 2){
       
-      createPlatform(x, height - imgGrass.height * 3, imgGrass);
+      createPlatform(x - intMoveStage, height - imgGrass.height * 3, imgGrass);
 
     }
     for(int y = height - imgDirt.height * 2 - 2; y < height; y += imgDirt.height - 2){
       for(int x = 0; x < imgGrass.width * 4; x += imgDirt.width - 2){
         
-        createPlatform(x, y, imgDirt);
+        createPlatform(x - intMoveStage, y, imgDirt);
 
       }
     }
@@ -153,25 +189,25 @@ public class Sketch extends PApplet {
     // second chunk
     for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgGrass.width - 2){
       
-      createPlatform(x, height - imgGrass.height * 4, imgGrass);
+      createPlatform(x - intMoveStage, height - imgGrass.height * 4, imgGrass);
 
     }
     for(int y = height - imgDirt.height * 3 - 2; y < height; y += imgDirt.height - 2){
       for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgDirt.width - 2){
         
-        createPlatform(x, y, imgDirt);
+        createPlatform(x - intMoveStage, y, imgDirt);
 
       }
     }
 
     // platform chunk 1
     for(int x = imgPlat.width * 13; x < width; x += imgPlat.width){
-      createPlatform(x, height - imgPlat.height * 8, imgPlat);
+      createPlatform(x - intMoveStage, height - imgPlat.height * 8, imgPlat);
     }
 
     // platform chunk 2
     for(int x = 0; x < imgPlat.width * 11; x += imgPlat.width){
-      createPlatform(x, height - imgPlat.height * 12, imgPlat);
+      createPlatform(x - intMoveStage, height - imgPlat.height * 12, imgPlat);
     }
 
     // spike
@@ -181,9 +217,26 @@ public class Sketch extends PApplet {
   }
 
   public void createPlatform(int x, int y, PImage image) {
-    intPlatformX.add(x);
-    intPlatformY.add(y);
-    image(image, x, y);
+    if(intPlatformX.size() < intObjectLimit){
+      intPlatformX.add((float)x);
+      intPlatformY.add(y);
+    }
+
+    if(player.fltPX <= 410 - 60 && boolLeft == true){
+      moveIt(0);
+    } else if (player.fltPX >= 550 - 60 && boolRight == true){
+      moveIt(0);
+    }
+
+    image(image, x + fltXOffset, y);
+  }
+
+  public void moveIt(int burst){
+    
+    fltXOffset += player.fltPSpeed * player.intDirection * -1 / 40;
+      for(int i = 0; i < intPlatformX.size(); i++){
+        intPlatformX.set(i, intPlatformX.get(i) + (float)(player.fltPSpeed * player.intDirection * -1 / 40) + burst);
+      }
   }
 
   public boolean isOnTop() {
@@ -195,10 +248,13 @@ public class Sketch extends PApplet {
         }
 
           player.strState = "ground";
+          if(intFrame == 4){
+            intFrame = 2;
+          }
           return true;  
       
         }
-
+        
     }
 
     player.strState = "air";
@@ -213,13 +269,16 @@ public class Sketch extends PApplet {
     if(strAnim == "run"){
       
       
-      if(intFrame == 0 || intFrame == 1){
+      if(intFrame <= 1){
         intFrame = 15;
+        timeSince = millis();
+      } else if(intFrame == 15 && millis() >= timeSince + 100){
+        intFrame++;
         timeSince = millis();
       }
       
 
-      if(intFrame < 7 || intFrame > 14){
+      if (intFrame > 1 && intFrame != 15 && intFrame < 7 || intFrame > 14 && millis() >= timeSince + 100){
         intFrame = 7;
         timeSince = millis();
       } 
@@ -278,7 +337,7 @@ public class Sketch extends PApplet {
   
   public void keyPressed() {
     // change bools
-    if (key == 'w'){
+    if (key == 'w' || keyCode == 32){
       boolUp = true;
     }
     if (key == 'a'){
@@ -300,7 +359,7 @@ public class Sketch extends PApplet {
 
   public void keyReleased() {
     // change bools for movement
-    if (key == 'w'){
+    if (key == 'w' || keyCode == 32){
       boolUp = false;
     }
     if (key == 'a'){
