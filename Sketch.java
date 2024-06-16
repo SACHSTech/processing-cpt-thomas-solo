@@ -9,11 +9,17 @@ public class Sketch extends PApplet {
   PImage imgDirt;
   PImage imgPlat;
   PImage imgSpike;
+  PImage imgGoal;
 
   ArrayList<Integer> intPlatformY = new ArrayList<Integer>();
   ArrayList<Float> intPlatformX = new ArrayList<Float>();
-  int intObjectLimit = 0;
+  ArrayList<PImage> imgPlatformType = new ArrayList<PImage>();
+  int intObjectLimit = 100;
   int intMoveStage = 0;
+  
+  int intLevel = 0;
+  float fltGoalX;
+  float fltGoalY;
 
   boolean boolUp = false;
   boolean boolDown = false;
@@ -31,6 +37,8 @@ public class Sketch extends PApplet {
 
   float fltXOffset = 0;
   float fltYOffset = 0;
+
+  int intLives = 3;
   
   public void settings() {
     size(960, 540);
@@ -60,6 +68,9 @@ public class Sketch extends PApplet {
 
     imgSpike = loadImage("Objects/Spikes.png");
     imgSpike.resize(imgSpike.width*2, imgSpike.height*2);
+
+    imgGoal = loadImage("Goal.png");
+    imgGoal.resize(imgGoal.width*2, imgGoal.height*2);
 
   }
 
@@ -113,143 +124,66 @@ public class Sketch extends PApplet {
 	  
     background(102, 204, 255);
 
-    if(!player.boolDead){
-      collision();
-      player.run(boolUp, boolDown, boolLeft, boolRight, boolShift);
-      animate();
-    } else {
-      if(timeSince + 500 <= millis()){
-        player.boolDead = false;
-        player.fltGravity = 0;
-        player.fltPX = 480 - 60;
-        player.fltPY = 300;
-
-        for(int i = 0; i < intPlatformX.size(); i++){
-          intPlatformX.remove(i);
-          intPlatformY.remove(i);
-        }
-
-        fltXOffset = 0;
-      }
-    }
-  
-    image(player.imgPlayer, player.fltPX, player.fltPY);
+    collision();
+    player.run(boolUp, boolDown, boolLeft, boolRight, boolShift);
+    animate();
   
     level();
+
+    image(player.imgPlayer, player.fltPX, player.fltPY);
 
   }
 
   public void collision() {
-    if(player.fltPY > height){
-      player.boolDead = true;
-      timeSince = millis();
-    }
-
-    isOnTop();
     
-    for(int i = 0; i < intPlatformX.size(); i++){
-      if(player.fltPX + player.imgPlayer.width >= intPlatformX.get(i) && player.fltPX <= intPlatformX.get(i) + imgPlat.width && player.fltPY + player.imgPlayer.height > intPlatformY.get(i) && player.fltPY <= intPlatformY.get(i) + imgPlat.height){
-        
-        if (boolRight == true && player.fltPY + player.imgPlayer.height < intPlatformY.get(i)){
-          player.fltPX -= 5;
-        } else if(boolLeft == true && player.fltPY + player.imgPlayer.height < intPlatformY.get(i)){
-          player.fltPX += 5;
-        }
-  
-      }
+    if((player.fltPX > fltGoalX + imgGoal.width) && (fltGoalX > player.fltPX + player.imgPlayer.width) && (player.fltPY + player.imgPlayer.height > fltGoalY) && (fltGoalY + imgGoal.height > player.fltPY)){
+      intLevel++;
     }
-  }
-
-  public void level() {
     
-    intObjectLimit = 58;
-    intMoveStage = -330;
-
-    // 0th chunk
-    for(int x = imgGrass.width * 4 * -1 + 8; x < -10; x += imgGrass.width - 2){
-      
-      createPlatform(x - intMoveStage, height - imgGrass.height * 12, imgGrass);
-
-    }
-
-    // first chunk
-    for(int x = 0; x < imgGrass.width * 4; x += imgGrass.width - 2){
-      
-      createPlatform(x - intMoveStage, height - imgGrass.height * 3, imgGrass);
-
-    }
-    for(int y = height - imgDirt.height * 2 - 2; y < height; y += imgDirt.height - 2){
-      for(int x = 0; x < imgGrass.width * 4; x += imgDirt.width - 2){
-        
-        createPlatform(x - intMoveStage, y, imgDirt);
-
-      }
-    }
-
-    // second chunk
-    for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgGrass.width - 2){
-      
-      createPlatform(x - intMoveStage, height - imgGrass.height * 4, imgGrass);
-
-    }
-    for(int y = height - imgDirt.height * 3 - 2; y < height; y += imgDirt.height - 2){
-      for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgDirt.width - 2){
-        
-        createPlatform(x - intMoveStage, y, imgDirt);
-
-      }
-    }
-
-    // platform chunk 1
-    for(int x = imgPlat.width * 13; x < width; x += imgPlat.width){
-      createPlatform(x - intMoveStage, height - imgPlat.height * 8, imgPlat);
-    }
-
-    // platform chunk 2
-    for(int x = 0; x < imgPlat.width * 11; x += imgPlat.width){
-      createPlatform(x - intMoveStage, height - imgPlat.height * 12, imgPlat);
-    }
-
-    // spike
-    createPlatform(imgSpike.width * 6, height - imgSpike.height * 13, imgSpike);
-
-    
-  }
-
-  public void createPlatform(int x, int y, PImage image) {
-    if(intPlatformX.size() < intObjectLimit){
-      intPlatformX.add((float)x);
-      intPlatformY.add(y);
-    }
-
     if(player.fltPX <= 410 - 60 && boolLeft == true){
       moveIt(0);
     } else if (player.fltPX >= 550 - 60 && boolRight == true){
       moveIt(0);
     }
 
-    image(image, x + fltXOffset, y);
+    if(player.fltPY > height){
+      intLives -= 1;
+      player.fltPY -= 50;
+      player.fltGravity = 15;
+      timeSince = millis();
+    }
+
+    drawHealth();
+
+    isOnTop();
+    
   }
 
-  public void moveIt(int burst){
+  public void drawHealth() {
     
-    fltXOffset += player.fltPSpeed * player.intDirection * -1 / 40;
-      for(int i = 0; i < intPlatformX.size(); i++){
-        intPlatformX.set(i, intPlatformX.get(i) + (float)(player.fltPSpeed * player.intDirection * -1 / 40) + burst);
-      }
+    strokeWeight(2);
+    fill(255, 42, 0);
+
+    for(int i = 0; i < intLives; i++){
+      rect(0 + 25 + i * 75, 0 + 25, 75, 75);
+    }
+
+    if(intLives <= 0){
+      restart();
+    }
   }
 
   public boolean isOnTop() {
 
     for(int i = 0; i < intPlatformX.size(); i++){
-      if (player.fltPY + arrSprite[intFrame].height >= intPlatformY.get(i) + arrSprite[intFrame].height / 4 && player.fltPY + arrSprite[intFrame].height <= intPlatformY.get(i) + 28 + imgGrass.height && player.fltPX + arrSprite[intFrame].width - 30 >= intPlatformX.get(i) && player.fltPX - 10 <= intPlatformX.get(i) + 5) {
+      if (player.fltPY + arrSprite[intFrame].height >= intPlatformY.get(i) + arrSprite[intFrame].height / 4 && player.fltPY + arrSprite[intFrame].height <= intPlatformY.get(i) + 28 + imgGrass.height && player.fltPX + arrSprite[intFrame].width - 30 >= intPlatformX.get(i) && player.fltPX - 10 <= intPlatformX.get(i) + 5 && imgPlatformType.get(i) != imgDirt) {
         while (player.fltPY + arrSprite[intFrame].height > intPlatformY.get(i) + arrSprite[intFrame].height / 4){
-            player.fltPY -= 1;
+          player.fltPY -= 1;
         }
 
           player.strState = "ground";
           if(intFrame == 4){
-            intFrame = 2;
+            intFrame = 0;
           }
           return true;  
       
@@ -262,12 +196,110 @@ public class Sketch extends PApplet {
 
   }
 
+  public void level() {
+    
+    if(intLevel == 0){
+
+      intMoveStage = -330;
+
+      // 0th chunk
+      for(int x = imgGrass.width * 2 * -1 + 4; x < -10; x += imgGrass.width - 2){
+        
+        createPlatform(x - intMoveStage, height - imgGrass.height * 12, imgGrass);
+
+      }
+      
+
+      // first chunk
+      for(int x = 0; x < imgGrass.width * 4; x += imgGrass.width - 2){
+        
+        createPlatform(x - intMoveStage, height - imgGrass.height * 3, imgGrass);
+
+      }
+      for(int y = height - imgDirt.height * 2 - 2; y < height; y += imgDirt.height - 2){
+        for(int x = 0; x < imgGrass.width * 4; x += imgDirt.width - 2){
+          
+          createPlatform(x - intMoveStage, y, imgDirt);
+
+        }
+      }
+
+      // second chunk
+      for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgGrass.width - 2){
+        
+        createPlatform(x - intMoveStage, height - imgGrass.height * 4, imgGrass);
+
+      }
+      for(int y = height - imgDirt.height * 3 - 2; y < height; y += imgDirt.height - 2){
+        for(int x = imgGrass.width * 7; x < imgGrass.width * 10; x += imgDirt.width - 2){
+          
+          createPlatform(x - intMoveStage, y, imgDirt);
+
+        }
+      }
+
+      // platform chunk 1
+      for(int x = imgPlat.width * 13; x < width; x += imgPlat.width){
+        createPlatform(x - intMoveStage, height - imgPlat.height * 8, imgPlat);
+      }
+
+      // platform chunk 2
+      for(int x = 0; x < imgPlat.width * 11; x += imgPlat.width){
+        createPlatform(x - intMoveStage, height - imgPlat.height * 12, imgPlat);
+      }
+
+      // goal
+      fltGoalX = imgPlat.width * 4 + fltXOffset;
+      fltGoalY = 100;
+      image(imgGoal, fltGoalX, fltGoalY);
+    } 
+    else if(intLevel == 1) {
+      if(intObjectLimit == 100){
+        for(int i = intPlatformX.size() - 1; i > 0; i--){
+          intPlatformX.remove(i);
+          intPlatformY.remove(i);
+          imgPlatformType.remove(i);
+        }
+        intObjectLimit = 101;
+      }
+
+      for(int x = 0; x < imgGrass.width * 4; x += imgGrass.width - 2){
+        
+        createPlatform(x - intMoveStage, height - imgGrass.height * 3, imgGrass);
+
+      }
+
+    }
+  
+  }
+
+  public void createPlatform(int x, int y, PImage image) {
+    if(intPlatformX.size() < intObjectLimit && !player.boolDead){
+      intPlatformX.add((float)x);
+      intPlatformY.add(y);
+      imgPlatformType.add(image);
+      
+    }
+
+    image(image, x + fltXOffset, y);
+  }
+
+  public void moveIt(int burst){
+    
+    if(!player.boolDead){
+        fltXOffset += player.fltPSpeed * player.intDirection * -1;
+      for(int i = 0; i < intPlatformX.size(); i++){
+        intPlatformX.set(i, intPlatformX.get(i) + (float)(player.fltPSpeed * player.intDirection * -1) + burst);
+      }
+    }
+
+  }
+
   public void animate() {
 
     checkAnim();
 
     if(strAnim == "run"){
-      
       
       if(intFrame <= 1){
         intFrame = 15;
@@ -380,6 +412,34 @@ public class Sketch extends PApplet {
 
     if (keyCode == 16){
       boolShift = false;
+    }
+  }
+
+  public void restart() {
+    intObjectLimit = 100;
+    intMoveStage = 0;
+  
+    intLevel = 0;
+    fltGoalX = imgPlat.width * 4 + fltXOffset;
+    fltGoalY = 100;
+
+    boolUp = false;
+    boolDown = false;
+    boolLeft = false;
+    boolRight = false;
+    boolShift = false;
+  
+    timeSince = 0;
+    intFrame = 0;
+    
+    fltXOffset = 0;
+
+    intLives = 3;
+
+    for(int i = intPlatformX.size() - 1; i > 0; i--){
+      intPlatformX.remove(i);
+      intPlatformY.remove(i);
+      imgPlatformType.remove(i);
     }
   }
 

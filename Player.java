@@ -13,23 +13,27 @@ public class Player {
     double fltPSpeed = 2.5;
     
     String strState = "air";
-    boolean canDash = true;
+    boolean canMove = true;
     float startTime;
 
     boolean boolDead = false;
 
     public void run(boolean boolUp, boolean boolDown, boolean boolLeft, boolean boolRight, boolean boolShift) {
 
+      if(canMove == true){
         if(boolRight == true || boolLeft == true){
           if(boolRight == true && fltPX < 550 - 60){
             fltPX += fltPSpeed*intDirection;
           } else if (boolLeft == true && fltPX > 410  - 60){
             fltPX += fltPSpeed*intDirection;
           }
-
+      }
         
           if(fltPSpeed < 5){
             fltPSpeed += 0.25;
+          }
+          if(fltPSpeed > 5){
+            fltPSpeed = 5;
           }
         }
         
