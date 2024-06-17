@@ -18,7 +18,7 @@ public class Player {
 
     boolean boolDead = false;
 
-    public void run(boolean boolUp, boolean boolDown, boolean boolLeft, boolean boolRight, boolean boolShift) {
+    public void run(boolean boolUp, boolean boolDown, boolean boolLeft, boolean boolRight) {
 
       if(canMove == true){
         if(boolRight == true || boolLeft == true){
