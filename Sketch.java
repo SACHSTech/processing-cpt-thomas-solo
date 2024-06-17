@@ -446,10 +446,10 @@ public class Sketch extends PApplet {
       // platform chunk 6
       for(int x = imgGrass.width * 23; x < imgGrass.width * 27; x += imgGrass.width - 2){
         
-        createPlatform(x - intMoveStage, height - imgGrass.height * 6, imgGrass);
+        createPlatform(x - intMoveStage, height - imgGrass.height * 8, imgGrass);
 
       }
-      for(int y = height - imgDirt.height * 5 - 2; y < height; y += imgDirt.height - 2){
+      for(int y = height - imgDirt.height * 7 - 2; y < height; y += imgDirt.height - 2){
         for(int x = imgGrass.width * 23; x < imgGrass.width * 27; x += imgDirt.width - 2){
           
           createPlatform(x - intMoveStage, y, imgDirt);
@@ -459,7 +459,7 @@ public class Sketch extends PApplet {
 
       // goal
       fltGoalX = imgPlat.width * 25 - intMoveStage + fltXOffset + 12;
-      fltGoalY = 300;
+      fltGoalY = 300 - imgDirt.height * 2;
       image(imgGoal, fltGoalX, fltGoalY);
 
     }
