@@ -33,7 +33,7 @@ public class Sketch extends PApplet {
   int intMoveStage = -330;
   
   // intLevel is either 0, 1, 2, or 3, and is used for deciding what level to show
-  int intLevel = 0;
+  int intLevel = 2;
   float fltGoalX;
   float fltGoalY;
 
@@ -377,6 +377,77 @@ public class Sketch extends PApplet {
 
       // goal
       fltGoalX = imgPlat.width * 23 - intMoveStage + fltXOffset + 17;
+      fltGoalY = 300;
+      image(imgGoal, fltGoalX, fltGoalY);
+
+    } else {
+      // ran once upon the level being set to second, removes all previous platforms, resets fltXOffset, and changes the object limit
+      if(intObjectLimit == 50){
+        for(int i = intPlatformX.size() - 1; i > 0; i--){
+          intPlatformX.remove(i);
+          intPlatformY.remove(i);
+          imgPlatformType.remove(i);
+        }
+
+        fltXOffset = 0;
+        player.fltPX = 420;
+        player.fltPY = 300;
+// platform chunk 4
+      for(int x = imgPlat.width * 16; x < imgPlat.width * 20; x += imgPlat.width){
+        createPlatform(x - intMoveStage, height - imgPlat.height * 6, imgPlat);
+      }
+        intObjectLimit = 75;
+      }
+
+      // platform chunk 1
+      createPlatform(imgGrass.width * 2 - intMoveStage, height - imgGrass.height * 3, imgGrass);
+
+      for(int y = height - imgDirt.height * 2 - 2; y < height; y += imgDirt.height - 2){
+        createPlatform(imgGrass.width * 2 - intMoveStage, y, imgDirt);
+      }
+
+      // platform chunk 2
+      createPlatform(-intMoveStage, height - imgGrass.height * 6, imgGrass);
+
+      for(int y = height - imgDirt.height * 5 - 2; y < height; y += imgDirt.height - 2){
+        createPlatform(-intMoveStage, y, imgDirt);
+      }
+
+      // platform chunk 3
+      createPlatform(imgGrass.width * 4 - intMoveStage, height - imgGrass.height * 9, imgGrass);
+
+      for(int y = height - imgDirt.height * 8 - 2; y < height; y += imgDirt.height - 2){
+        createPlatform(imgGrass.width * 4 - intMoveStage, y, imgDirt);
+      }
+
+      // platform chunk 4
+      for(int x = imgPlat.width * 8; x < imgPlat.width * 15; x += imgPlat.width){
+        createPlatform(x - intMoveStage, height - imgPlat.height * 8, imgPlat);
+      }
+
+      // platform chunk 5
+      createPlatform(imgGrass.width * 18 - intMoveStage, height - imgGrass.height * 9, imgGrass);
+
+      for(int y = height - imgDirt.height * 8 - 2; y < height; y += imgDirt.height - 2){
+        createPlatform(imgGrass.width * 18 - intMoveStage, y, imgDirt);
+      }
+
+      // platform chunk 6
+      for(int x = imgGrass.width * 23; x < imgGrass.width * 27; x += imgGrass.width - 2){
+        
+        createPlatform(x - intMoveStage, height - imgGrass.height * 6, imgGrass);
+
+      }
+      for(int y = height - imgDirt.height * 5 - 2; y < height; y += imgDirt.height - 2){
+        for(int x = imgGrass.width * 23; x < imgGrass.width * 27; x += imgDirt.width - 2){
+          
+          createPlatform(x - intMoveStage, y, imgDirt);
+
+        }
+      }
+
+      // goal
+      fltGoalX = imgPlat.width * 25 - intMoveStage + fltXOffset + 12;
       fltGoalY = 300;
       image(imgGoal, fltGoalX, fltGoalY);
 
