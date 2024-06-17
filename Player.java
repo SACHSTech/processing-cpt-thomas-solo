@@ -16,8 +16,6 @@ public class Player {
     boolean canMove = true;
     float startTime;
 
-    boolean boolDead = false;
-
     public void run(boolean boolUp, boolean boolDown, boolean boolLeft, boolean boolRight) {
 
       if(canMove == true){

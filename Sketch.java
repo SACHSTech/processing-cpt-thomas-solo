@@ -5,12 +5,14 @@ import processing.core.PImage;
 
 public class Sketch extends PApplet {
 	
-  // creation of all PImage stage items
+  // creation of all PImage items
   PImage imgGrass;
   PImage imgDirt;
   PImage imgPlat;
   PImage imgSpike;
   PImage imgGoal;
+  PImage imgWin;
+  PImage imgStart;
 
   // creation of player sprite arrays, timeSince which is used for timing animations, and intFrame which is used to select a frame from the sprite arrays
   PImage[] arrSprite = new PImage[17];
@@ -32,8 +34,8 @@ public class Sketch extends PApplet {
   // intMoveStage is a technically unnecessary constant that made it easier for me to shift from the player moving on the screen to the screen moving along with the player, it just shifts everything over
   int intMoveStage = -330;
   
-  // intLevel is either 0, 1, 2, or 3, and is used for deciding what level to show
-  int intLevel = 2;
+  // intLevel is either -1, 0, 1, 2, or 3, and is used for deciding what level to show
+  int intLevel = -1;
   float fltGoalX;
   float fltGoalY;
 
@@ -86,6 +88,9 @@ public class Sketch extends PApplet {
 
     imgGoal = loadImage("Goal.png");
     imgGoal.resize(imgGoal.width*2, imgGoal.height*2);
+
+    imgStart = loadImage("StartWin/Start.png");
+    imgWin = loadImage("StartWin/Win.png");
 
   }
 
@@ -144,8 +149,14 @@ public class Sketch extends PApplet {
 	  
     background(102, 204, 255);
 
+    // start screen
+    if(intLevel == -1){
+      image(imgStart, 0, 0);
+      if(keyPressed){
+        intLevel = 0;
+      }
     // if the game is over, stop running everything
-    if(intLevel != 3){
+    } else if(intLevel >= 0 && intLevel <= 2){
       collision();
       player.run(boolUp, boolDown, boolLeft, boolRight);
       animate();
@@ -155,7 +166,7 @@ public class Sketch extends PApplet {
       // player is drawn last to go on top of everything else
       image(player.imgPlayer, player.fltPX, player.fltPY);
     } else {
-      rect(0, 0, width, height);
+      image(imgWin, 0, 0);
     }
   }
 
@@ -392,7 +403,7 @@ public class Sketch extends PApplet {
         fltXOffset = 0;
         player.fltPX = 420;
         player.fltPY = 300;
-// platform chunk 4
+      // platform chunk 4
       for(int x = imgPlat.width * 16; x < imgPlat.width * 20; x += imgPlat.width){
         createPlatform(x - intMoveStage, height - imgPlat.height * 6, imgPlat);
       }
@@ -464,8 +475,7 @@ public class Sketch extends PApplet {
    */
   public void createPlatform(int x, int y, PImage image) {
     // while the object limit hasn't been met, add more blocks
-    // also !player.boolDead to avoid any jank
-    if(intPlatformX.size() < intObjectLimit && !player.boolDead){
+    if(intPlatformX.size() < intObjectLimit){
       intPlatformX.add((float)x);
       intPlatformY.add(y);
       imgPlatformType.add(image);
@@ -481,15 +491,12 @@ public class Sketch extends PApplet {
    */
   public void moveIt(){
     
-    // as long as the player is alive, run this code
-    if(!player.boolDead){
-        fltXOffset += player.fltPSpeed * player.intDirection * -1;
+      fltXOffset += player.fltPSpeed * player.intDirection * -1;
       // move every block
       for(int i = 0; i < intPlatformX.size(); i++){
         intPlatformX.set(i, intPlatformX.get(i) + (float)(player.fltPSpeed * player.intDirection * -1));
       }
-    }
-
+      
   }
 
   /**
